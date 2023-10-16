@@ -1,46 +1,13 @@
-from collections import deque
-from pprint import pprint
 rudolph_dy = [0, -1, -1, -1, 0, 1, 1, 1]
 rudolph_dx = [-1, -1, 0, 1, 1, 1, 0, -1]
 santa_dy = [-1, 0, 1, 0]
 santa_dx = [0, 1, 0, -1]
 
-# 최단거리 탐색
-def bfs(y, x, visited):
-    q = deque([(y, x)])
-    visited[y][x] = 0
-    while q:
-        ey, ex = q.popleft()
-        for k in range(4):
-            ny, nx = ey + santa_dy[k], ex + santa_dx[k]
-            if 0 <= ny < N and 0 <= nx < N:
-                if visited[ny][nx] == -1:
-                    visited[ny][nx] = visited[ey][ex] + 1
-                    q.append((ny, nx))
-    # 산타가 이동할 때의 루돌프와의 최단 경로 구하기
-
-# bfs로 구할게 아니네...
-
 # 충돌 구현
-def bump(dy, dx, santaID, y, x, power):
-    santaScore[santaID] += power
+def bump(dy, dx, santaID, y, x, power, isBump):
+    if isBump:
+        santaScore[santaID] += power
     ny, nx = y + power * dy, x + power * dx
-    if 0 <= ny < N and 0 <= nx < N:
-        if field[ny][nx] == 0:
-            field[ny][nx] = santaID
-            santaLocation[santaID] = (ny, nx)
-        else:
-            playerID2 = field[ny][nx]
-            field[ny][nx] = santaID
-            santaLocation[santaID] = (ny, nx)
-            interaction(dy, dx, playerID2, ny, nx)
-    else:
-        outSanta.add(santaID)
-        santaLocation[santaID] = (-1, -1)
-
-# 상호 작용
-def interaction(dy, dx, santaID, y, x):
-    ny, nx = y + dy, x + dx
     if 0 <= ny < N and 0 <= nx < N:
         if field[ny][nx] == 0:
             field[ny][nx] = santaID
@@ -49,7 +16,7 @@ def interaction(dy, dx, santaID, y, x):
             santaID2 = field[ny][nx]
             field[ny][nx] = santaID
             santaLocation[santaID] = (ny, nx)
-            interaction(dy, dx, santaID2, ny, nx)
+            bump(dy, dx, santaID2, ny, nx, 1, False)
     else:
         outSanta.add(santaID)
         santaLocation[santaID] = (-1, -1)
@@ -68,27 +35,29 @@ for _ in range(P):
     field[r-1][c-1] = i
 isKnockDown = [0] *(P+1)
 isKnockDown_next = [0]*(P+1)
-# print('초기 field->')
-# pprint(field)
+
 # 1. 소 이동
 # 1) 소와 가장 가까운 유저 선택
 m = 0
 while playingSanta and m < M:
     outSanta = set()
     pickedSanta = 0
-    minDist = 2 * (N ** 2) + 1
     ry, rx = rudolphLocation
+    distanceList = []
     for santaID in playingSanta:
         sy, sx = santaLocation[santaID]
         rudolphDistance = (ry - sy)**2 + (rx - sx)**2
-        if minDist > rudolphDistance:
-            minDist = rudolphDistance
-            pickedSanta = santaID
-        elif minDist == rudolphDistance:
-            if sy > santaLocation[pickedSanta][0]:
-                pickedSanta = santaID
-            elif sy == santaLocation[pickedSanta][0] and sx > santaLocation[pickedSanta][1]:
-                pickedSanta = santaID
+        distanceList.append([rudolphDistance, -sy, -sx, santaID])
+    distanceList.sort()
+    pickedSanta = distanceList[0][3]
+        # if minDist > rudolphDistance:
+        #     minDist = rudolphDistance
+        #     pickedSanta = santaID
+        # elif minDist == rudolphDistance:
+        #     if sy > santaLocation[pickedSanta][0]:
+        #         pickedSanta = santaID
+        #     elif sy == santaLocation[pickedSanta][0] and sx > santaLocation[pickedSanta][1]:
+        #         pickedSanta = santaID
 
     # 돌진 대상 산타에게 가장 가까이 가는 경로를 탐색해서 그 경로로 이동
     minDist = 2*N**2 + 1
@@ -108,12 +77,10 @@ while playingSanta and m < M:
         field[nry][nrx] = -1
         isKnockDown[santaID] = 1
         isKnockDown_next[santaID] = 1
-        bump(nry-ry, nrx-rx, santaID, nry, nrx, C)
+        bump(nry-ry, nrx-rx, santaID, nry, nrx, C, True)
     else:
         field[nry][nrx] = -1
     rudolphLocation = (nry, nrx)
-    # print(f'{m}에서 소 이동->')
-    # pprint(field)
     
     # 2. 산타 이동
     for santaID in sorted(list(playingSanta)):
@@ -138,7 +105,7 @@ while playingSanta and m < M:
             if field[nsy][nsx] == -1:
                 field[sy][sx] = 0
                 isKnockDown_next[santaID] = 1
-                bump(sy-nsy, sx-nsx, santaID, nsy, nsx, D)
+                bump(sy-nsy, sx-nsx, santaID, nsy, nsx, D, True)
                 break
             # 빈칸이면 이동
             elif field[nsy][nsx] == 0:
@@ -148,12 +115,10 @@ while playingSanta and m < M:
                 break
     isKnockDown = isKnockDown_next
     isKnockDown_next = [0] * (P+1)
-    # print(f'{m}에서 산타 이동->')
-    # pprint(field)
 
     playingSanta -= outSanta
     for i in playingSanta:
         santaScore[i] += 1
     m += 1
-    # print(f'{m} score: {santaScore}')
+
 print(*santaScore[1:])
