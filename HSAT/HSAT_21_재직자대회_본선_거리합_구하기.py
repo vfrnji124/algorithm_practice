@@ -1,4 +1,3 @@
-# 무조건 알아둬야 하는 문제!
 # 모든 노드가 이어진 경우, 모든 노드에 대해 노드와 노드간의 거리를 구하는 문제 -> 플로이드-와샬
 # 근데 플로이드 와샬의 시간복잡도는 반복문을 세번 도는거기 때문에. n^3, n의 사이즈가 작을때만 사용이 가능한 알고리즘
 # 그런데 이 문제의 경우 n이 20만까지 올 수 있기 때문에 사용할 수가 없다.
@@ -13,15 +12,17 @@
 
 import sys
 input = sys.stdin.readline
+sys.setrecursionlimit(10**6) # DFS 돌릴 때 이부분을 까먹지 말아야 함.(노드갯수가 10^5이면 재귀가 많이 불리기때문이다.)
 
-# 트리구조가 주어졌을 때 하나의 노드를 루트노드로 잡았을 때 그 하위 노드의 서브트리 갯수를 구하는 과정
+# 트리가 주어지고, 하나의 노드를 루트노드로 잡았을 때 그 하위 노드의 서브트리 갯수를 구하는 과정
+# 노드의 하위 노드들과의 거리의 합을 계산
 def dfs1(current, parent):
     subtreeSize[current] = 1
     for i in range(len(node[current])):
         child = node[current][i][0]
         weight = node[current][i][1]
         if child != parent:
-            # dfs1을 먼저 call을 하고 계산
+            # dfs1을 먼저 call을 하고 계산(bottom-up)
             dfs1(child, current)
             distSum[current] += distSum[child] + subtreeSize[child]*weight
             subtreeSize[current] += subtreeSize[child]
@@ -32,7 +33,7 @@ def dfs2(current, parent):
         child = node[current][i][0]
         weight = node[current][i][1]
         if child != parent:
-            # 계산을 마친 다음에 dfs2를 call
+            # 계산을 마친 다음에 dfs2를 call(top-down)
             distSum[child] = distSum[current] + weight*(N-2*subtreeSize[child])
             dfs2(child, current)
     return

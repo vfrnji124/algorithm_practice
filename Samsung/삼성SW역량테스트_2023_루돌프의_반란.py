@@ -50,14 +50,6 @@ while playingSanta and m < M:
         distanceList.append([rudolphDistance, -sy, -sx, santaID])
     distanceList.sort()
     pickedSanta = distanceList[0][3]
-        # if minDist > rudolphDistance:
-        #     minDist = rudolphDistance
-        #     pickedSanta = santaID
-        # elif minDist == rudolphDistance:
-        #     if sy > santaLocation[pickedSanta][0]:
-        #         pickedSanta = santaID
-        #     elif sy == santaLocation[pickedSanta][0] and sx > santaLocation[pickedSanta][1]:
-        #         pickedSanta = santaID
 
     # 돌진 대상 산타에게 가장 가까이 가는 경로를 탐색해서 그 경로로 이동
     minDist = 2*N**2 + 1
