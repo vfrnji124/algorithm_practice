@@ -50,7 +50,6 @@
 # 알림받을 수 있는 채팅방 수 조회
 # 500 c
 
-from pprint import pprint
 N, Q = map(int, input().split())
 notification = [[0] * 21 for _ in range(N+1)]
 onOffList = [True] * (N+1)
